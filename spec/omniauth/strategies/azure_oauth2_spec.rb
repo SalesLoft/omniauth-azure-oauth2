@@ -46,12 +46,6 @@ describe OmniAuth::Strategies::AzureOauth2 do
         expect(subject.client.options[:token_url]).to eql('/common/oauth2/v2.0/token')
       end
 
-      it 'has correct token params' do
-        allow(subject).to receive(:request) { request }
-        subject.client
-        expect(subject.token_params[:resource]).to eql('00000002-0000-0000-c000-000000000000')
-      end
-
       describe "overrides" do
         it 'should override domain_hint' do
           @options = {domain_hint: 'hint'}
@@ -121,11 +115,6 @@ describe OmniAuth::Strategies::AzureOauth2 do
 
       it 'has correct token url' do
         expect(subject.client.options[:token_url]).to eql('/common/oauth2/v2.0/token')
-      end
-
-      it 'has correct token params' do
-        subject.client
-        expect(subject.token_params[:resource]).to eql('00000002-0000-0000-c000-000000000000')
       end
     end
 
