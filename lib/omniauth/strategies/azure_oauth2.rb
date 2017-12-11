@@ -5,6 +5,7 @@ module OmniAuth
   module Strategies
     class AzureOauth2 < OmniAuth::Strategies::OAuth2
       BASE_AZURE_URL = 'https://login.microsoftonline.com'
+      BASE_SCOPES = "User.Read".freeze
 
       option :name, 'azure_oauth2'
 
@@ -16,6 +17,21 @@ module OmniAuth
       # tenant_provider must return client_id, client_secret and optionally tenant_id and base_azure_url
       args [:tenant_provider]
 
+      option :client_options,
+        site: BASE_AZURE_URL,
+        authorize_url: '/common/oauth2/v2.0/authorize',
+        token_url: '/common/oauth2/v2.0/token'
+
+      def authorize_params
+        super.tap do |params|
+          options[:authorize_options].each do |k|
+            params[k] = request.params[k.to_s] unless [nil, ''].include?(request.params[k.to_s])
+          end
+
+          params[:scope] = get_scope(params)
+        end
+      end
+
       def client
         if options.tenant_provider
           provider = options.tenant_provider.new(self)
@@ -25,15 +41,9 @@ module OmniAuth
 
         options.client_id = provider.client_id
         options.client_secret = provider.client_secret
-        options.tenant_id =
-          provider.respond_to?(:tenant_id) ? provider.tenant_id : 'common'
-        options.base_azure_url = 
-          provider.respond_to?(:base_azure_url) ? provider.base_azure_url : BASE_AZURE_URL
 
         options.authorize_params.domain_hint = provider.domain_hint if provider.respond_to?(:domain_hint) && provider.domain_hint
         options.authorize_params.prompt = request.params['prompt'] if request.params['prompt']
-        options.client_options.authorize_url = "#{options.base_azure_url}/#{options.tenant_id}/oauth2/authorize"
-        options.client_options.token_url = "#{options.base_azure_url}/#{options.tenant_id}/oauth2/token"
 
         options.token_params.resource = options.resource
         super
@@ -61,9 +71,16 @@ module OmniAuth
 
       def raw_info
         # it's all here in JWT http://msdn.microsoft.com/en-us/library/azure/dn195587.aspx
+
         @raw_info ||= ::JWT.decode(access_token.token, nil, false).first
       end
 
+      def get_scope(params)
+        raw_scope = params[:scope] || BASE_SCOPES
+        scope_list = raw_scope.split(' ').map { |item| item.split(',') }.flatten
+
+        scope_list.join('+')
+      end
     end
   end
 end
