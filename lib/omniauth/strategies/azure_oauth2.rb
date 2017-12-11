@@ -4,9 +4,8 @@ require 'jwt'
 module OmniAuth
   module Strategies
     class AzureOauth2 < OmniAuth::Strategies::OAuth2
-
       BASE_AZURE_URL = 'https://login.microsoftonline.com'
-      BASE_SCOPES = "User.Read".freeze
+      BASE_SCOPES = %w[User.Read].freeze
 
       option :name, 'azure_oauth2'
 
@@ -42,9 +41,9 @@ module OmniAuth
 
         options.client_id = provider.client_id
         options.client_secret = provider.client_secret
-
         options.authorize_params.domain_hint = provider.domain_hint if provider.respond_to?(:domain_hint) && provider.domain_hint
         options.authorize_params.prompt = request.params['prompt'] if request.params['prompt']
+
         super
       end
 
@@ -75,10 +74,9 @@ module OmniAuth
       end
 
       def get_scope(params)
-        raw_scope = params[:scope] || BASE_SCOPES
-        scope_list = raw_scope.split(' ').map { |item| item.split(',') }.flatten
-
-        scope_list.join('+')
+        scopes = (params[:scope].is_a?(String)) ? params[:scope].split(",") : params[:scope]
+        scope_list = scopes || BASE_SCOPES
+        scope_list.join(' ')
       end
     end
   end
