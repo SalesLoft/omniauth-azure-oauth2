@@ -42,7 +42,7 @@ module OmniAuth
         options.client_id = provider.client_id
         options.client_secret = provider.client_secret
         options.authorize_params.domain_hint = provider.domain_hint if provider.respond_to?(:domain_hint) && provider.domain_hint
-        options.authorize_params.prompt = request.params['prompt'] if request.params['prompt']
+        options.authorize_params.prompt = request.params['prompt'] if !request.env.nil? && request.params['prompt']
 
         super
       end

@@ -53,6 +53,22 @@ describe OmniAuth::Strategies::AzureOauth2 do
           subject.client
           expect(subject.authorize_params[:domain_hint]).to eql('hint')
         end
+
+        it 'should set prompt' do
+          request.params.merge!('prompt' => 'login')
+          allow(subject).to receive(:request) { request }
+          subject.client
+          expect(subject.authorize_params[:prompt]).to eql('login')
+        end
+      end
+
+      context 'when env is nil' do
+        let(:request) { double('Request', :params => {}, :cookies => {}, :env => nil) }
+
+        it 'creates a client successfully' do
+          allow(subject).to receive(:request) { request }
+          subject.client
+        end
       end
     end
 
