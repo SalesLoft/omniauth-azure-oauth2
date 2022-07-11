@@ -62,8 +62,8 @@ describe OmniAuth::Strategies::AzureOauth2 do
         end
       end
 
-      context 'when env is nil' do
-        let(:request) { double('Request', :params => {}, :cookies => {}, :env => nil) }
+      context 'when params and env are nil' do
+        let(:request) { double('Request', :params => nil, :cookies => {}, :env => nil) }
 
         it 'creates a client successfully' do
           allow(subject).to receive(:request) { request }
